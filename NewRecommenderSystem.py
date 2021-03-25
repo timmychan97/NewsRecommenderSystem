@@ -1,10 +1,6 @@
 import pandas as pd
-
-df = pd.read_json('dataset/active1000/20170101', lines=True)
-print(df.iloc[0])
-
-#print(df.to_string()) 
-
+import os
+import json
 
 
 def load_data(path):
@@ -12,14 +8,16 @@ def load_data(path):
     Load events from files and convert to dataframe.
     """
     print("Loading dataset...")
-    map_lst=[]
+    map_lst = []
     for f in os.listdir(path):
         file_name=os.path.join(path,f)
         if os.path.isfile(file_name):
-            for line in open(file_name):
-                obj = json.loads(line.strip())
-                if not obj is None:
-                    map_lst.append(obj)
+            with open(file_name, encoding = 'utf-8') as _f:
+                for line in _f:
+                    obj = json.loads(line.strip())
+                    if not obj is None:
+                        map_lst.append(obj)
+    print("Done loading dataset")
     return pd.DataFrame(map_lst) 
 
 
