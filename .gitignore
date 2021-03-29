@@ -3,7 +3,8 @@ dataset/*
 
 # exception to the rule
 !dataset/.gitkeep 
-
+.idea/
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
