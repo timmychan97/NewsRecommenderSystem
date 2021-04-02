@@ -4,7 +4,7 @@ import re
 
 
 # Credit: https://github.com/stopwords-iso/stopwords-no/blob/master/raw/gh-stopwords-json-no.txt
-NORWEGIAN_STOPWORDS = ["alle", "at", "av", "bare", "begge", "ble", "blei", "bli", "blir", "blitt", "både", "båe", "da", "de", "deg", "dei", "deim", "deira", "deires", "dem", "den", "denne", "der", "dere", "deres", "det", "dette", "di", "din", "disse", "ditt", "du", "dykk", "dykkar", "då", "eg", "ein", "eit", "eitt", "eller", "elles", "en", "enn", "er", "et", "ett", "etter", "for", "fordi", "fra", "før", "ha", "hadde", "han", "hans", "har", "hennar", "henne", "hennes", "her", "hjå", "ho", "hoe", "honom", "hoss", "hossen", "hun", "hva", "hvem", "hver", "hvilke", "hvilken", "hvis", "hvor", "hvordan", "hvorfor", "i", "ikke", "ikkje", "ingen", "ingi", "inkje", "inn", "inni", "ja", "jeg", "kan", "kom", "korleis", "korso", "kun", "kunne", "kva", "kvar", "kvarhelst", "kven", "kvi", "kvifor", "man", "mange", "me", "med", "medan", "meg", "meget", "mellom", "men", "mi", "min", "mine", "mitt", "mot", "mykje", "ned", "no", "noe", "noen", "noka", "noko", "nokon", "nokor", "nokre", "nå", "når", "og", "også", "om", "opp", "oss", "over", "på", "samme", "seg", "selv", "si", "sia", "sidan", "siden", "sin", "sine", "sitt", "sjøl", "skal", "skulle", "slik", "so", "som", "somme", "somt", "så", "sånn", "til", "um", "upp", "ut", "uten", "var", "vart", "varte", "ved", "vere", "verte", "vi", "vil", "ville", "vore", "vors", "vort", "vår", "være", "vært", "å"]
+NORWEGIAN_STOPWORDS = ["alle", "at", "av", "bare", "begge", "ble", "blei", "bli", "blir", "blitt", "både", "båe", "da", "de", "deg", "dei", "deim", "deira", "deires", "dem", "den", "denne", "der", "dere", "deres", "det", "dette", "di", "din", "disse", "ditt", "du", "dykk", "dykkar", "då", "eg", "ein", "eit", "eitt", "eller", "elles", "en", "enn", "er", "et", "ett", "etter", "for", "fordi", "fra", "før", "ha", "hadde", "han", "hans", "har", "hennar", "henne", "hennes", "her", "hjå", "ho", "hoe", "honom", "hoss", "hossen", "hun", "hva", "hvem", "hver", "hvilke", "hvilken", "hvis", "hvor", "hvordan", "hvorfor", "i", "ikke", "ikkje", "ingen", "ingi", "inkje", "inn", "inni", "ja", "jeg", "kan", "kom", "korleis", "korso", "kun", "kunne", "kva", "kvar", "kvarhelst", "kven", "kvi", "kvifor", "man", "mange", "me", "med", "medan", "meg", "meget", "mellom", "men", "mi", "min", "mine", "mitt", "mot", "mykje", "må", "måtte", "ned", "no", "noe", "noen", "noka", "noko", "nokon", "nokor", "nokre", "nå", "når", "og", "også", "om", "opp", "oss", "over", "på", "samme", "seg", "selv", "si", "sia", "sidan", "siden", "sin", "sine", "sitt", "sjøl", "skal", "skulle", "slik", "so", "som", "somme", "somt", "så", "sånn", "til", "um", "upp", "ut", "uten", "var", "vart", "varte", "ved", "vere", "verte", "vi", "vil", "ville", "vore", "vors", "vort", "vår", "være", "vært", "å"]
 
 def find_good_keywords(keywords):
     """
@@ -18,8 +18,11 @@ def find_good_keywords(keywords):
        This requires advanced NLP
        ...
     """
-    # For each item, remove all characters except alphanumeric
-    keywords = map(lambda word: re.sub(r'[^A-Za-z0-9]+', '', word), keywords)
+    # Lowercase all strings
+    keywords = [kw.lower() for kw in keywords]
+
+    # For each item, remove all characters except alphanumeric and accented characters
+    keywords = map(lambda word: re.sub(r'[^A-Za-z0-9À-ÖØ-öø-ÿ]+', '', word), keywords)
 
     # Remove all items that is a number
     keywords = [kw for kw in keywords if not kw.isdigit()]
@@ -54,8 +57,19 @@ def derive_document_details(df_docs):
         if pd.isnull(row['category']) else row['category']
         ), axis=1)
 
-    # Drop url and time columns, we don't need them anymore
-    df_docs.drop(['url', 'time'], axis=1, inplace=True)
+    # Create new column "keywords" and fill it with words from category and title reasonably
+    def derive_keywords(row):
+        keywords = row['title'].split()
+        keywords = find_good_keywords(keywords)
+        if len(keywords) > 0:
+            return row['category'] + '|' + '|'.join(keywords)
+        else:
+            return row['category']
+
+    df_docs['keywords'] = df_docs.apply(derive_keywords, axis=1)
+    
+    # Drop url, time and title columns, we don't need them anymore
+    df_docs.drop(['url', 'time', 'title'], axis=1, inplace=True)
     
     
 def analyze_documents(df):
