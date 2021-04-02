@@ -9,6 +9,7 @@ from sklearn.metrics.pairwise import linear_kernel
 import matplotlib.pyplot as plt
 import seaborn as sns
 import content_based as content_based
+import preprocess as preprocess
 sns.set()
 
 
@@ -21,7 +22,7 @@ def load_data(path):
     for f in os.listdir(path):
         file_name=os.path.join(path,f)
         if os.path.isfile(file_name):
-            with open(file_name, encoding = 'utf-8') as _f:
+            with open(file_name, encoding='utf-8') as _f:
                 for line in _f:
                     obj = json.loads(line.strip())
                     if not obj is None:
@@ -55,24 +56,27 @@ def statistics(df):
     print(user_df.describe())
 
 
+
 if __name__ == '__main__':
     df=load_data("dataset/active1000")
     
     ###### Get Statistics from dataset ############
     print("Basic statistics of the dataset...")
-    statistics(df)
+    #statistics(df)
+
+    preprocess.analyze_documents(df)
     
     # ###### Recommendations based on Collaborative Filtering (Matrix Factorization) #######
     # print("Recommendation based on MF...")
     # collaborative_filtering(df)
     
     # ###### Recommendations based on Content-based Method (Cosine Similarity) ############
-    print("Recommendation based on content-based method 0")
-    content_based.recommendation_method_0(df, k=20)
-    print("Recommendation based on content-based method 1")
-    content_based.recommendation_method_1(df, k=20)
-    print("Recommendation based on content-based method 2")
-    content_based.recommendation_method_2(df, k=20)
+    # print("Recommendation based on content-based method 0")
+    # content_based.recommendation_method_0(df, k=20)
+    # print("Recommendation based on content-based method 1")
+    # content_based.recommendation_method_1(df, k=20)
+    # print("Recommendation based on content-based method 2")
+    # content_based.recommendation_method_2(df, k=20)
     
     
     
